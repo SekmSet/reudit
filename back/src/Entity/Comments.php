@@ -17,12 +17,6 @@ class Comments
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToMany(targetEntity: Users::class, inversedBy: 'comments')]
-    private Collection $user;
-
-    #[ORM\ManyToMany(targetEntity: Articles::class, inversedBy: 'comments')]
-    private Collection $article;
-
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(name: 'created', type: Types::DATE_MUTABLE)]
     private $createdAt;
@@ -30,6 +24,14 @@ class Comments
     #[ORM\Column(name: 'updated', type: Types::DATETIME_MUTABLE)]
     #[Gedmo\Timestampable]
     private $updatedAt;
+
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Articles $article = null;
+
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Users $author = null;
 
     public function __construct()
     {
@@ -40,54 +42,6 @@ class Comments
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Collection<int, Users>
-     */
-    public function getUser(): Collection
-    {
-        return $this->user;
-    }
-
-    public function addUser(Users $user): self
-    {
-        if (!$this->user->contains($user)) {
-            $this->user->add($user);
-        }
-
-        return $this;
-    }
-
-    public function removeUser(Users $user): self
-    {
-        $this->user->removeElement($user);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Articles>
-     */
-    public function getArticle(): Collection
-    {
-        return $this->article;
-    }
-
-    public function addArticle(Articles $article): self
-    {
-        if (!$this->article->contains($article)) {
-            $this->article->add($article);
-        }
-
-        return $this;
-    }
-
-    public function removeArticle(Articles $article): self
-    {
-        $this->articles->removeElement($article);
-
-        return $this;
     }
 
     /**
@@ -104,5 +58,29 @@ class Comments
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    public function getArticle(): ?Articles
+    {
+        return $this->article;
+    }
+
+    public function setArticle(?Articles $article): self
+    {
+        $this->article = $article;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?Users
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?Users $author): self
+    {
+        $this->author = $author;
+
+        return $this;
     }
 }

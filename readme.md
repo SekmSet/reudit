@@ -78,7 +78,7 @@ php bin/console doctrine:migrations:migrate
 - 1 utilisateur : plusieurs commentaires
 - 1 commentaire : plusieurs utilisateurs
 
--> ManyToMany
+-> ManyToOne
 
 **Article - Label**
 - 1 label : plusieurs articles
@@ -96,5 +96,5 @@ php bin/console doctrine:migrations:migrate
 - 1 article : plusieurs commentaires
 - 1 comentaire : 1 article
 
--> ManyToMany
+-> ManyToOne
 

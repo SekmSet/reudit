@@ -35,9 +35,6 @@ class Articles
     #[ORM\JoinColumn(nullable: false)]
     private ?Users $author = null;
 
-    #[ORM\ManyToMany(targetEntity: Comments::class, mappedBy: 'article')]
-    private Collection $comments;
-
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(name: 'created', type: Types::DATE_MUTABLE)]
     private $createdAt;
@@ -45,6 +42,9 @@ class Articles
     #[ORM\Column(name: 'updated', type: Types::DATETIME_MUTABLE)]
     #[Gedmo\Timestampable]
     private $updatedAt;
+
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: Comments::class, orphanRemoval: true)]
+    private Collection $comments;
 
     public function __construct()
     {
@@ -116,32 +116,6 @@ class Articles
         return $this;
     }
 
-    /**
-     * @return Collection<int, Comments>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comments $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->addArticle($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(Comments $comment): self
-    {
-        if ($this->comments->removeElement($comment)) {
-            $comment->removeArticle($this);
-        }
-
-        return $this;
-    }
 
     /**
      * @return \DateTime
@@ -171,5 +145,35 @@ class Articles
             'updated' => $this->getUpdatedAt(),
             'created' => $this->getCreatedAt()
         ];
+    }
+
+    /**
+     * @return Collection<int, Comments>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comments $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setArticle($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comments $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getArticle() === $this) {
+                $comment->setArticle(null);
+            }
+        }
+
+        return $this;
     }
 }

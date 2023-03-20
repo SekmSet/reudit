@@ -29,11 +29,8 @@ class Users
     #[ORM\Column(length: 255)]
     private ?string $role = null;
 
-    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Articles::class)]
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Articles::class, orphanRemoval: true)]
     private Collection $articles;
-
-    #[ORM\ManyToMany(targetEntity: Comments::class, mappedBy: 'user')]
-    private Collection $comments;
 
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(name: 'created', type: Types::DATE_MUTABLE)]
@@ -42,6 +39,9 @@ class Users
     #[ORM\Column(name: 'updated', type: Types::DATETIME_MUTABLE)]
     #[Gedmo\Timestampable]
     private $updatedAt;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Comments::class, orphanRemoval: true)]
+    private Collection $comments;
 
     public function __construct()
     {
@@ -133,33 +133,6 @@ class Users
     }
 
     /**
-     * @return Collection<int, Comments>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comments $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->addUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(Comments $comment): self
-    {
-        if ($this->comments->removeElement($comment)) {
-            $comment->removeUser($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return \DateTime
      */
     public function getCreatedAt()
@@ -184,5 +157,35 @@ class Users
             'updated' => $this->getUpdatedAt(),
             'created' => $this->getCreatedAt()
         ];
+    }
+
+    /**
+     * @return Collection<int, Comments>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comments $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comments $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getAuthor() === $this) {
+                $comment->setAuthor(null);
+            }
+        }
+
+        return $this;
     }
 }

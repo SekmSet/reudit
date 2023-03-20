@@ -20,7 +20,7 @@ class Categories
     #[ORM\Column(length: 255, unique: true)]
     private ?string $label = null;
 
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Articles::class)]
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Articles::class, orphanRemoval: true)]
     private Collection $articles;
 
     #[Gedmo\Timestampable(on: 'create')]
