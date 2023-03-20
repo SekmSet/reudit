@@ -1,0 +1,5 @@
+.idea
+.photo
+
+front/node_modules
+back/.env

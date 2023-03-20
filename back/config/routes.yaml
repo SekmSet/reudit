@@ -1,0 +1,30 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+    prefix: api
+
+# OLD WAY TO DECLARE AND CREATE ROUTES
+# YOU CAN USE THE NEW ANNOTATION IN YOUR CONTROLLER TO CREATE ROUTES
+
+#api_get_all_article:
+#    path: /api/article
+#    controller: App\Controller\ArticleController::index
+#    methods: GET|HEAD
+#api_get_all_user:
+#    path: /api/user
+#    controller: App\Controller\UserController::status
+#    methods: GET|HEAD
+#api_get_all_label:
+#    path: /api/label
+#    controller: App\Controller\LabelController::index
+#    methods: GET|HEAD
+#api_get_all_category:
+#    path: /api/category
+#    controller: App\Controller\CategoryController::index
+#    methods: GET|HEAD
+#api_get_all_comment:
+#    path: /api/comment
+#    controller: App\Controller\CommentController::index
+#    methods: GET|HEAD
