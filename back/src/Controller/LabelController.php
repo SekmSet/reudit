@@ -120,7 +120,7 @@ class LabelController extends AbstractController
         }
     }
 
-    #[Route('/update/{id}', name: 'app_label_update', methods: 'PUT')]
+    #[Route('/{id}', name: 'app_label_update', methods: 'PUT')]
     public function update(EntityManagerInterface $entityManager, Request $request, int $id): JsonResponse
     {
         try {
@@ -163,7 +163,7 @@ class LabelController extends AbstractController
         }
     }
 
-    #[Route('/delete/{id}', name: 'app_label_delete', methods: 'DELETE')]
+    #[Route('/{id}', name: 'app_label_delete', methods: 'DELETE')]
     public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
     {
         try {

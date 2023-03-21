@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\CommentsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -32,6 +31,9 @@ class Comments
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Users $author = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $content = null;
 
     public function __construct()
     {
@@ -82,5 +84,30 @@ class Comments
         $this->author = $author;
 
         return $this;
+    }
+
+    public function getContent(): ?string
+    {
+        return $this->content;
+    }
+
+    public function setContent(string $content): self
+    {
+        $this->content = $content;
+
+        return $this;
+    }
+
+
+    public function serialize(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'content' => $this->getContent(),
+            'author' => $this->getAuthor(),
+            'article' => $this->getArticle(),
+            'updated' => $this->getUpdatedAt(),
+            'created' => $this->getCreatedAt()
+        ];
     }
 }

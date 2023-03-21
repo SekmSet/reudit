@@ -99,7 +99,7 @@ class Label
         return $this->updatedAt;
     }
 
-    public function serialize() {
+    public function serialize(): array {
         return [
             'id' => $this->getId(),
             'label' => $this->getLabel(),

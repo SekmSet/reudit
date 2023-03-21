@@ -4,12 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Users;
 use Doctrine\ORM\EntityManagerInterface;
-use mysql_xdevapi\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use function Sodium\add;
 
 #[Route('/user')]
 class UserController extends AbstractController
@@ -22,6 +20,35 @@ class UserController extends AbstractController
             'path' => 'src/Controller/UserController.php',
             'http' => 200
         ]);
+    }
+
+    #[Route('/{id}', name: 'app_user_read_one', methods: 'GET')]
+    public function readBy(EntityManagerInterface $entityManager, int $id): JsonResponse
+    {
+        try {
+            $user = $entityManager->getRepository(Users::class)->find($id);
+
+            if (!$user) {
+                throw $this->createNotFoundException(
+                    'No user found for id '.$id
+                );
+            }
+
+            return $this->json([
+                'message' => 'User found !',
+                'path' => 'src/Controller/UserController.php',
+                'http' => 200,
+                'Arguments' => ['id' => $id],
+                'result' => $user->serialize()
+            ]);
+        } catch(\Exception $e) {
+            return $this->json([
+                'message' => 'Internal Servor Error : Error during getting user !',
+                'path' => 'src/Controller/UserController.php',
+                'http' => 500,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     #[Route('/', name: 'app_user_read_all', methods: 'GET')]
@@ -50,35 +77,6 @@ class UserController extends AbstractController
         } catch (\Exception $e) {
             return $this->json([
                 'message' => 'Internal Servor Error : Error during getting users !',
-                'path' => 'src/Controller/UserController.php',
-                'http' => 500,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    #[Route('/{id}', name: 'app_user_read_one', methods: 'GET')]
-    public function readBy(EntityManagerInterface $entityManager, int $id): JsonResponse
-    {
-        try {
-            $user = $entityManager->getRepository(Users::class)->find($id);
-
-            if (!$user) {
-                throw $this->createNotFoundException(
-                    'No user found for id '.$id
-                );
-            }
-
-            return $this->json([
-                'message' => 'User found !',
-                'path' => 'src/Controller/UserController.php',
-                'http' => 200,
-                'Arguments' => ['id' => $id],
-                'result' => $user->serialize()
-            ]);
-        } catch(\Exception $e) {
-            return $this->json([
-                'message' => 'Internal Servor Error : Error during getting user !',
                 'path' => 'src/Controller/UserController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
@@ -129,7 +127,7 @@ class UserController extends AbstractController
         }
     }
 
-    #[Route('/update/{id}', name: 'app_user_update', methods: 'PUT')]
+    #[Route('/{id}', name: 'app_user_update', methods: 'PUT')]
     public function update(EntityManagerInterface $entityManager, Request $request, int $id): JsonResponse
     {
         try {
@@ -183,7 +181,7 @@ class UserController extends AbstractController
         }
     }
 
-    #[Route('/delete/{id}', name: 'app_user_delete', methods: 'DELETE')]
+    #[Route('/{id}', name: 'app_user_delete', methods: 'DELETE')]
     public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
     {
         try {

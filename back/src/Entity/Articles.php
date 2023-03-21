@@ -133,20 +133,6 @@ class Articles
         return $this->updatedAt;
     }
 
-    public function serialize() {
-        return [
-            'id' => $this->getId(),
-            'title' => $this->getTitle(),
-            'content' => $this->getContent(),
-            'category' => $this -> getCategory(),
-            'label' => $this -> getLabel(),
-            'author' => $this -> getAuthor(),
-            'comments' => $this -> getComments(),
-            'updated' => $this->getUpdatedAt(),
-            'created' => $this->getCreatedAt()
-        ];
-    }
-
     /**
      * @return Collection<int, Comments>
      */
@@ -175,5 +161,19 @@ class Articles
         }
 
         return $this;
+    }
+
+    public function serialize(): array {
+        return [
+            'id' => $this->getId(),
+            'title' => $this->getTitle(),
+            'content' => $this->getContent(),
+            'category' => $this -> getCategory(),
+            'label' => $this -> getLabel(),
+            'author' => $this -> getAuthor(),
+            'comments' => $this -> getComments(),
+            'updated' => $this->getUpdatedAt(),
+            'created' => $this->getCreatedAt()
+        ];
     }
 }

@@ -153,7 +153,7 @@ class ArticleController extends AbstractController
         }
     }
 
-    #[Route('/update/{id}', name: 'app_article_update', methods: 'PUT')]
+    #[Route('/{id}', name: 'app_article_update', methods: 'PUT')]
     public function update(EntityManagerInterface $entityManager, Request $request, int $id): JsonResponse
     {
         try {
@@ -230,7 +230,7 @@ class ArticleController extends AbstractController
         }
     }
 
-    #[Route('/delete/{id}', name: 'app_article_delete', methods: 'DELETE')]
+    #[Route('/{id}', name: 'app_article_delete', methods: 'DELETE')]
     public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
     {
         try {
@@ -264,7 +264,8 @@ class ArticleController extends AbstractController
                 'message' => 'Internal Servor Error : Error during deleting article !',
                 'path' => 'src/Controller/ArticleController.php',
                 'http' => 500,
-                'Arguments' => ['id' => $id]
+                'Arguments' => ['id' => $id],
+                'error' => $e->getMessage()
             ]);
         }
     }

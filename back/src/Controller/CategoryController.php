@@ -120,7 +120,7 @@ class CategoryController extends AbstractController
         }
     }
 
-    #[Route('/update/{id}', name: 'app_category_update', methods: 'PUT')]
+    #[Route('/{id}', name: 'app_category_update', methods: 'PUT')]
     public function update(EntityManagerInterface $entityManager, Request $request, int $id): JsonResponse
     {
         try {
@@ -164,7 +164,7 @@ class CategoryController extends AbstractController
         }
     }
 
-    #[Route('/delete/{id}', name: 'app_category_delete', methods: 'DELETE')]
+    #[Route('/{id}', name: 'app_category_delete', methods: 'DELETE')]
     public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
     {
         try {

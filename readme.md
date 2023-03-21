@@ -12,8 +12,8 @@
 
 - Faire un shéma de notre base de données 
 - Crée ton projet avec la ou les techno(s) choisi. Si tu as 2 technos = tu fais 2 projets (dans un même dossier)
-  - Symfony : pour la réalisation de mon API
-  - React : Pour la réalisation de mon application web
+  - **Symfony** : pour la réalisation de mon API
+  - **React** : Pour la réalisation de mon application web
 
 **Qu'est-ce qui est vraiment IMPORTANT pour atteindre le MVP ?**
 
