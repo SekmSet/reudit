@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/category')]
@@ -20,7 +21,7 @@ class CategoryController extends AbstractController
             'message' => 'Welcome to your new controller!',
             'path' => 'src/Controller/CategoryController.php',
             'http' => 200
-        ]);
+        ], 200);
     }
 
     #[Route('/{id}', name: 'app_category_read_one', methods: 'GET')]
@@ -48,7 +49,7 @@ class CategoryController extends AbstractController
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -75,13 +76,20 @@ class CategoryController extends AbstractController
                 'http' => 200,
                 'result' => $result
             ]);
+        } catch (NotFoundHttpException $e) {
+            return $this->json([
+                'message' => 'No categories found',
+                'path' => 'src/Controller/CategoryController.php',
+                'http' => 200,
+                'result' => []
+            ], 200);
         } catch (\Exception $e) {
             return $this->json([
                 'message' => 'Internal Servor Error : Error during getting categories !',
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -96,7 +104,7 @@ class CategoryController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CategoryController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $category = new Categories();
@@ -116,7 +124,7 @@ class CategoryController extends AbstractController
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -129,7 +137,7 @@ class CategoryController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CategoryController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $category = $entityManager->getRepository(Categories::class)->find($id);
@@ -160,7 +168,7 @@ class CategoryController extends AbstractController
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -173,7 +181,7 @@ class CategoryController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CategoryController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $category = $entityManager->getRepository(Categories::class)->find($id);
@@ -200,7 +208,7 @@ class CategoryController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 }

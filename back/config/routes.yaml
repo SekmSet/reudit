@@ -5,6 +5,10 @@ controllers:
     type: attribute
     prefix: api
 
+api_login_check:
+    path: api/login_check
+    methods: POST
+
 # OLD WAY TO DECLARE AND CREATE ROUTES
 # YOU CAN USE THE NEW ANNOTATION IN YOUR CONTROLLER TO CREATE ROUTES
 

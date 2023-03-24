@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[Route('/comment')]
 class CommentController extends AbstractController
@@ -51,7 +52,7 @@ class CommentController extends AbstractController
                 'Arguments' => ['id' => $id],
                 'result' => '',
                 'error' => $e->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
@@ -88,27 +89,26 @@ class CommentController extends AbstractController
                 'Arguments' => [],
                 'result' => '',
                 'error' => $e->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/', name: 'app_comment_create', methods: 'POST')]
-    public function create(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    public function create(EntityManagerInterface $entityManager, Request $request, UserInterface $user): JsonResponse
     {
         try {
             $content = $request->request->get('content');
-            $author = $request->request->get('author');
             $article = $request->request->get('article');
 
-            if ($content === null && $author === null && $article === null) {
+            if ($content === null && $article === null) {
                 return $this->json([
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CommentController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
-            $authorExist = $entityManager->getRepository(Users::class)->find(intval($author));
+            $authorExist = $entityManager->getRepository(Users::class)->find($user->getUserIdentifier());
             $articleExist = $entityManager->getRepository(Articles::class)->find(intval($article));
 
             if (!$authorExist) {
@@ -147,7 +147,7 @@ class CommentController extends AbstractController
                 'Arguments' => [],
                 'result' => '',
                 'error' => $e->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
@@ -160,7 +160,7 @@ class CommentController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CommentController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $comment = $entityManager->getRepository(Comments::class)->find($id);
@@ -192,7 +192,7 @@ class CommentController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -205,7 +205,7 @@ class CommentController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CommentController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $comment = $entityManager->getRepository(Comments::class)->find($id);
@@ -232,6 +232,7 @@ class CommentController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e->getMessage()
-            ]);
-        }    }
+            ], 500);
+        }
+    }
 }

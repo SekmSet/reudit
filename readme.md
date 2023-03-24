@@ -98,3 +98,36 @@ php bin/console doctrine:migrations:migrate
 
 -> ManyToOne
 
+### Roles
+
+- **ROLE_ADMIN**
+  - Read all users
+  - Read one user
+  - Update one user : role
+  - Delete user
+  - Delete any articles
+  - Delete any comments
+  - Delete any users
+  - ROLE_USER
+  
+
+- **ROLE_USER**
+  - Create article
+  - Update own article
+  - Delete own article
+  - Add comment on article 
+  - Update own comment 
+  - Delete own comment 
+  - Create an account
+  - Read own account information
+  - Update own account
+  - Delete own account
+  - Login / Logout
+  - PUBLIC ACCESS (NO ROLE)
+
+
+- **PUBLIC ACCESS (NO ROLE)**
+  - Read all articles
+  - Read one article
+  - Read article's comments
+  - Search article

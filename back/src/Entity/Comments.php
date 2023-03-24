@@ -104,7 +104,7 @@ class Comments
         return [
             'id' => $this->getId(),
             'content' => $this->getContent(),
-            'author' => $this->getAuthor(),
+            'author' => $this->getAuthor()->serialize(),
             'article' => $this->getArticle(),
             'updated' => $this->getUpdatedAt(),
             'created' => $this->getCreatedAt()

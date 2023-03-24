@@ -164,14 +164,19 @@ class Articles
     }
 
     public function serialize(): array {
+        $comments = [];
+        foreach ($this->getComments() as $comment) {
+            $comments[] = $comment->serialize();
+        }
+
         return [
             'id' => $this->getId(),
             'title' => $this->getTitle(),
             'content' => $this->getContent(),
-            'category' => $this -> getCategory(),
-            'label' => $this -> getLabel(),
-            'author' => $this -> getAuthor(),
-            'comments' => $this -> getComments(),
+            'category' => $this -> getCategory()?->serialize(),
+            'label' => $this -> getLabel()?->serialize(),
+            'author' => $this -> getAuthor()?->serialize(),
+            'comments' => $comments,
             'updated' => $this->getUpdatedAt(),
             'created' => $this->getCreatedAt()
         ];

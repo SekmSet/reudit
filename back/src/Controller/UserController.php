@@ -5,13 +5,26 @@ namespace App\Controller;
 use App\Entity\Users;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/user')]
 class UserController extends AbstractController
 {
+
+    public function __construct(
+        // Avoid calling getFirewallConfig() in the constructor: auth may not
+        // be complete yet. Instead, store the entire Security object.
+        private Security $security,
+        private RequestStack $requestStack,
+        private EntityManagerInterface $entityManager
+    ) {
+    }
+
     #[Route('/status', name: 'app_user')]
     public function status(): JsonResponse
     {
@@ -23,10 +36,10 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_user_read_one', methods: 'GET')]
-    public function readBy(EntityManagerInterface $entityManager, int $id): JsonResponse
+    public function readBy(int $id): JsonResponse
     {
         try {
-            $user = $entityManager->getRepository(Users::class)->find($id);
+            $user = $this->entityManager->getRepository(Users::class)->find($id);
 
             if (!$user) {
                 throw $this->createNotFoundException(
@@ -47,15 +60,15 @@ class UserController extends AbstractController
                 'path' => 'src/Controller/UserController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/', name: 'app_user_read_all', methods: 'GET')]
-    public function readAll(EntityManagerInterface $entityManager): JsonResponse
+    public function readAll(): JsonResponse
     {
         try {
-            $users = $entityManager->getRepository(Users::class)->findAll();
+            $users = $this->entityManager->getRepository(Users::class)->findAll();
 
             if (!$users) {
                 throw $this->createNotFoundException(
@@ -80,12 +93,15 @@ class UserController extends AbstractController
                 'path' => 'src/Controller/UserController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/', name: 'app_user_create', methods: 'POST')]
-    public function create(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    public function create(
+        EntityManagerInterface $entityManager,
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         try {
             $name = $request->request->get('name');
@@ -98,16 +114,19 @@ class UserController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/UserController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
-            $hash = $this->encryptPassword(trim($password));
-
             $user = new Users();
-            $user->setName(ucfirst(trim($name)));
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                trim($password)
+            );
+
+            $user->setPassword($hashedPassword);
+            $user->setName(trim($name));
             $user->setEmail(trim($email));
-            $user->setRole(ucfirst(trim($role)));
-            $user->setPassword($hash);
+            $user->setRoles(['ROLE_USER']);
 
             $entityManager->persist($user);
             $entityManager->flush();
@@ -123,12 +142,12 @@ class UserController extends AbstractController
                 'path' => 'src/Controller/UserController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/{id}', name: 'app_user_update', methods: 'PUT')]
-    public function update(EntityManagerInterface $entityManager, Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         try {
             if ($id === 0) {
@@ -136,10 +155,10 @@ class UserController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/UserController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
-            $user = $entityManager->getRepository(Users::class)->find($id);
+            $user = $this->entityManager->getRepository(Users::class)->find($id);
 
             if (!$user) {
                 throw $this->createNotFoundException(
@@ -151,18 +170,25 @@ class UserController extends AbstractController
                 $name = $request->request->get('name');
                 $user->setName(ucfirst(trim($name)));
             }
+
             if ($request->request->has("password")) {
                 $password = $request->request->get('password');
-                $hash = $this->encryptPassword(trim($password));
-                $user->setPassword($hash);
-            }
-            if ($request->request->has("name")) {
-                $role = $request->request->get('role');
-                $user->setRole(ucfirst(trim($role)));
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $user,
+                    trim($password)
+                );
+
+                $user->setPassword($hashedPassword);
             }
 
-            $entityManager->persist($user);
-            $entityManager->flush();
+            // Only Admin can change users's role
+            if ($request->request->has("role")) {
+                $role = $request->request->get('role');
+                $user->setRoles([$role]);
+            }
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
 
             return $this->json([
                 'message' => 'User correctly updated !',
@@ -177,23 +203,26 @@ class UserController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/{id}', name: 'app_user_delete', methods: 'DELETE')]
-    public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         try {
+            $request = $this->requestStack->getCurrentRequest();
+            $firewallName = $this->security->getFirewallConfig($request)?->getName();
+
             if ($id === 0) {
                 return $this->json([
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/UserController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
-            $user = $entityManager->getRepository(Users::class)->find($id);
+            $user = $this->entityManager->getRepository(Users::class)->find($id);
 
             if (!$user) {
                 throw $this->createNotFoundException(
@@ -201,8 +230,8 @@ class UserController extends AbstractController
                 );
             }
 
-            $entityManager->remove($user);
-            $entityManager->flush();
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
 
             return $this->json([
                 'message' => 'User correctly deleted !',
@@ -217,12 +246,7 @@ class UserController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
-    }
-
-    private function encryptPassword($password): string
-    {
-        return password_hash($password, PASSWORD_BCRYPT);
     }
 }

@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/label')]
@@ -48,7 +49,7 @@ class LabelController extends AbstractController
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -56,13 +57,7 @@ class LabelController extends AbstractController
     public function readAll(EntityManagerInterface $entityManager): JsonResponse
     {
         try {
-            $labels = $entityManager->getRepository(Categories::class)->findAll();
-
-            if (!$labels) {
-                throw $this->createNotFoundException(
-                    'No labels found'
-                );
-            }
+            $labels = $entityManager->getRepository(Label::class)->findAll();
 
             $result = [];
             foreach ($labels as $label) {
@@ -75,13 +70,20 @@ class LabelController extends AbstractController
                 'http' => 200,
                 'result' => $result
             ]);
+        } catch (NotFoundHttpException $e) {
+            return $this->json([
+                'message' => 'No label found',
+                'path' => 'src/Controller/LabelController.php',
+                'http' => 200,
+                'result' => []
+            ], 200);
         } catch (\Exception $e) {
             return $this->json([
                 'message' => 'Internal Servor Error : Error during getting labels !',
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -96,7 +98,7 @@ class LabelController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CategoryController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $label = new Label();
@@ -116,7 +118,7 @@ class LabelController extends AbstractController
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -129,7 +131,7 @@ class LabelController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/CategoryController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $label = $entityManager->getRepository(Label::class)->find($id);
@@ -159,7 +161,7 @@ class LabelController extends AbstractController
                 'path' => 'src/Controller/CategoryController.php',
                 'http' => 500,
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -172,7 +174,7 @@ class LabelController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/LabelController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
             $label = $entityManager->getRepository(Label::class)->find($id);
@@ -199,7 +201,7 @@ class LabelController extends AbstractController
                 'http' => 200,
                 'Arguments' => ['id' => $id],
                 'error' => $e
-            ]);
+            ], 500);
         }
 
     }

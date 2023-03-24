@@ -1,5 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Gravitas+One&display=swap');
+
 body {
   margin: 0;
+  background: whitesmoke!important;
+  /*padding: 3em;*/
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -10,4 +14,67 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+h1, h3 {
+  font-family: 'Gravitas One', cursive;
+}
+
+img {
+  padding: 1%;
+}
+
+button {
+  margin: 1%!important;
+}
+
+.container {
+  width: 100%;
+  background: whitesmoke;
+  display: block;
+  border-radius: 20px ;
+  box-shadow: 10px 5px 40px darkgrey;
+  margin: 2% auto;
+  padding: 1%;
+  /*min-height: 100vh;*/
+}
+
+.navbar {
+  margin: 0 2%;
+  background: whitesmoke!important;
+}
+
+.cardView {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+}
+
+.card {
+  margin : 2%;
+}
+
+.card-body {
+  background: whitesmoke!important;
+}
+
+.commentBlock {
+  border: solid 0.4px black;
+  padding: 1%;
+  height: 9em;
+  overflow-y: scroll;
+  scrollbar-color: rebeccapurple black;
+  scrollbar-width: thin;
+}
+
+.comments {
+  border-radius: 3px;
+  width: 20em;
+  margin-bottom: 1%;
+}
+
+.articleContent {
+  line-height: 3em;
 }

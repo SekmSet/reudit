@@ -11,10 +11,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[Route('/article')]
 class ArticleController extends AbstractController
 {
+    public function __construct(private EntityManagerInterface $entityManager)
+    {
+    }
+
+
     #[Route('/status', name: 'app_article_status')]
     public function status(): JsonResponse
     {
@@ -25,20 +31,20 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_article_read_one')]
-    public function readBy(EntityManagerInterface $entityManager, int $id): JsonResponse
+    #[Route('/{id}', name: 'app_article_read_one', methods: 'GET')]
+    public function readBy(int $id): JsonResponse
     {
         try {
-            $article = $entityManager->getRepository(Articles::class)->find($id);
+            $article = $this->entityManager->getRepository(Articles::class)->find($id);
 
             if (!$article) {
                 throw $this->createNotFoundException(
-                    'No article found for id '.$id
+                    'No article found for id ' . $id
                 );
             }
 
             return $this->json([
-                'message' => 'User found !',
+                'message' => 'Article found !',
                 'path' => 'src/Controller/ArticleController.php',
                 'http' => 200,
                 'Arguments' => ['id' => $id],
@@ -51,15 +57,15 @@ class ArticleController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/', name: 'app_article_read_all', methods: 'GET')]
-    public function readAll(EntityManagerInterface $entityManager): JsonResponse
+    public function readAll(): JsonResponse
     {
         try {
-            $articles = $entityManager->getRepository(Articles::class)->findAll();
+            $articles = $this->entityManager->getRepository(Articles::class)->findAll();
 
             if (!$articles) {
                 throw $this->createNotFoundException(
@@ -84,21 +90,20 @@ class ArticleController extends AbstractController
                 'path' => 'src/Controller/ArticleController.php',
                 'http' => 500,
                 'error' => $e
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/', name: 'app_article_create', methods: 'POST')]
-    public function create(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    public function create(Request $request, UserInterface $user): JsonResponse
     {
         try {
             $title = $request->request->get('title');
             $content = $request->request->get('content');
             $category = $request->request->get('category');
             $label = $request->request->get('label');
-            $author = $request->request->get('author');
 
-            if ($title === null && $content === null && $category === null && $label === null && $author === null) {
+            if ($title === null && $content === null && $category === null && $label === null) {
                 return $this->json([
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/ArticleController.php',
@@ -106,9 +111,9 @@ class ArticleController extends AbstractController
                 ]);
             }
 
-            $authorExist = $entityManager->getRepository(Users::class)->find(intval($author));
-            $labelExist = $entityManager->getRepository(Label::class)->find(intval($label));
-            $categoryExist = $entityManager->getRepository(Categories::class)->find(intval($category));
+            $authorExist = $this->entityManager->getRepository(Users::class)->find($user->getUserIdentifier());
+            $labelExist = $this->entityManager->getRepository(Label::class)->find(intval($label));
+            $categoryExist = $this->entityManager->getRepository(Categories::class)->find(intval($category));
 
             if (!$authorExist) {
                 throw $this->createNotFoundException(
@@ -135,26 +140,26 @@ class ArticleController extends AbstractController
             $article->setLabel($labelExist);
             $article->setCategory($categoryExist);
 
-            $entityManager->persist($article);
-            $entityManager->flush();
+            $this->entityManager->persist($article);
+            $this->entityManager->flush();
 
             return $this->json([
                 'message' => 'New article created successfully!',
                 'path' => 'src/Controller/ArticleController.php',
-                'http' => 200,
-            ]);
+                'http' => 201,
+            ], 201);
         } catch (\Exception $e) {
             return $this->json([
                 'message' => 'Internal Servor Error : Error during creating article !',
                 'path' => 'src/Controller/ArticleController.php',
                 'http' => 500,
-                'error' =>$e
-            ]);
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
     #[Route('/{id}', name: 'app_article_update', methods: 'PUT')]
-    public function update(EntityManagerInterface $entityManager, Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         try {
             if ($id === 0) {
@@ -162,14 +167,14 @@ class ArticleController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/ArticleController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
-            $article = $entityManager->getRepository(Articles::class)->find($id);
+            $article = $this->entityManager->getRepository(Articles::class)->find($id);
 
             if (!$article) {
                 throw $this->createNotFoundException(
-                    'No article found for id '.$id
+                    'No article found for id ' . $id
                 );
             }
 
@@ -185,7 +190,7 @@ class ArticleController extends AbstractController
             if ($request->request->has("category")) {
                 $category = $request->request->get('category');
 
-                $categoryExist = $entityManager->getRepository(Categories::class)->find(intval($category));
+                $categoryExist = $this->entityManager->getRepository(Categories::class)->find(intval($category));
 
                 if (!$categoryExist) {
                     throw $this->createNotFoundException(
@@ -199,7 +204,7 @@ class ArticleController extends AbstractController
             if ($request->request->has("label")) {
                 $label = $request->request->get('label');
 
-                $labelExist = $entityManager->getRepository(Label::class)->find(intval($label));
+                $labelExist = $this->entityManager->getRepository(Label::class)->find(intval($label));
 
                 if (!$labelExist) {
                     throw $this->createNotFoundException(
@@ -210,8 +215,8 @@ class ArticleController extends AbstractController
                 $article->setLabel($labelExist);
             }
 
-            $entityManager->persist($article);
-            $entityManager->flush();
+            $this->entityManager->persist($article);
+            $this->entityManager->flush();
 
             return $this->json([
                 'message' => 'Article correctly updated!',
@@ -226,12 +231,12 @@ class ArticleController extends AbstractController
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e
-            ]);
+            ], 500);
         }
     }
 
     #[Route('/{id}', name: 'app_article_delete', methods: 'DELETE')]
-    public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         try {
             if ($id === 0) {
@@ -239,19 +244,19 @@ class ArticleController extends AbstractController
                     'message' => 'Internal Servor Error : values have to be not null.',
                     'path' => 'src/Controller/ArticleController.php',
                     'http' => 500,
-                ]);
+                ], 500);
             }
 
-            $article = $entityManager->getRepository(Users::class)->find($id);
+            $article = $this->entityManager->getRepository(Articles::class)->find($id);
 
             if (!$article) {
                 throw $this->createNotFoundException(
-                    'No article found for id '.$id
+                    'No article found for id ' . $id
                 );
             }
 
-            $entityManager->remove($article);
-            $entityManager->flush();
+            $this->entityManager->remove($article);
+            $this->entityManager->flush();
 
             return $this->json([
                 'message' => 'Article correctly deleted !',
@@ -259,14 +264,14 @@ class ArticleController extends AbstractController
                 'http' => 200,
                 'Arguments' => ['id' => $id]
             ]);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->json([
                 'message' => 'Internal Servor Error : Error during deleting article !',
                 'path' => 'src/Controller/ArticleController.php',
                 'http' => 500,
                 'Arguments' => ['id' => $id],
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 }
